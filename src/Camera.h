@@ -16,11 +16,16 @@ public:
 
 private:
     // Position
-    glm::vec3 viewpoint; // e
+    glm::vec3 viewpoint; // e, position of the camera
+    // Camera Basis
+    float u;
+    float v;
+    float w;
     // Resolution
     int width; 
     int height;
     
+
 
     
 };
