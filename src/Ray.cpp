@@ -1,4 +1,4 @@
-#include "Ray.h"
+#include "Ray.hpp"
 
 
 Ray::Ray(glm::vec3 o, glm::vec3 d) {
@@ -7,7 +7,14 @@ Ray::Ray(glm::vec3 o, glm::vec3 d) {
     }
 
 glm::vec3 Ray::evaluate(float t) {
-    // Ray Equation: p(t) = e + t(s − e).
     return o + (t*d);
+}
+
+glm::vec3 Ray::getOrigin() {
+    return o;
+}
+
+glm::vec3 Ray::getDirection() {
+    return d;
 }
     

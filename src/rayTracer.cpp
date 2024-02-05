@@ -6,8 +6,9 @@
 #include <glm/glm.hpp>
 
 #include <iostream>
-#include "Ray.h"
-#include "Camera.h"
+#include "Ray.hpp"
+#include "OrthoCamera.cpp"
+#include "Sphere.cpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -159,32 +160,60 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    // Image Resolution
+    const int imageWidth  = 128; // keep it in powers of 2!
+    const int imageHeight = 128; // keep it in powers of 2!
     // Create the image (RGB Array) to be displayed
-    const int width  = 128; // keep it in powers of 2!
-    const int height = 128; // keep it in powers of 2!
-    unsigned char image[width*height*3];
+    unsigned char image[imageWidth*imageHeight*3];
 
-    // Define a sphere at origin
-    glm::vec3 point = glm::vec3(0,0,0);
+    glm::vec3 viewPoint = glm::vec3(0, 10, 50);
+    glm::vec3 viewDir = glm::vec3(0,0,-1);
+    glm::vec3 upward = glm::vec3(0,0,1);
+    float cameraWidth = 128;
+    float cameraHeight = 128;
+
+    OrthoCamera camera(viewPoint, viewDir, upward, cameraWidth, cameraHeight);
+
+    // Define a sphere at 0,0,0 with radius 5
+    glm::vec3 sphereOrigin = glm::vec3(0,0,0);
     float radius = 5;
+    Sphere sphere(sphereOrigin, radius);
 
     // Ray Equation: p(t) = e + t(s − e).
     
-    for(int i = 0; i < height; i++)
+    for(int i = 0; i < imageWidth; i++)
     {
-        for (int j = 0; j < width; j++)
+        for (int j = 0; j < imageHeight; j++)
         {
-            int idx = (i * width + j) * 3;
-            image[idx] = (unsigned char) (255 * i*j/height/width)  ; //((i+j) % 2) * 255;
-            image[idx+1] = 0;
-            image[idx+2] = 0;
+            // int idx = (i * width + j) * 3;
+            // image[idx] = (unsigned char) (255 * i*j/height/width)  ; //((i+j) % 2) * 255;
+            // image[idx+1] = 0;
+            // image[idx+2] = 0;
+
+            // compute (u,v) to get coordinates of pixel's position on the image plane, with respect to e
+            float u = camera.DeterminePixelU(i, imageWidth);
+            float v = camera.DeterminePixelV(j, imageHeight);
+
+            // create ray from pixel position
+            glm::vec3 o = camera.GenerateRayOrigin(u,v); // e
+            glm::vec3 d = -(camera.getW());
+
+            Ray ray(o,d);
+            HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
+
+            if (!isinf(hitRecord.t)) { // if t is not infinity (hit)
+                int idx = (i * imageWidth + j) * 3;
+                image[idx] = 255;
+                image[idx+1] = 255;
+                image[idx+2] = 255;
+            }
         }
     }
 
     unsigned char *data = &image[0];
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -262,5 +291,5 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 //           Ray = Camera(i,j)
 //           for obj in Objects in scene
 //               intersection_point = obj.intersect(Ray)
-//                color = shading(int-point, normal)
+//               color = shading(int-point, normal)
 //           image[i][j] = color
