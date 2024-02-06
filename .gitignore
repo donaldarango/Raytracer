@@ -1,6 +1,6 @@
 *.vscode
 *.DS_Store
-*include/GLEW
+*include/GL
 *include/GLFW
 *include/glm
 *bin
