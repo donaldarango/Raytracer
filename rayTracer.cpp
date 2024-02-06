@@ -4,6 +4,9 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/ext.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
 #include "include/OrthoCamera.hpp"
@@ -161,22 +164,20 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // Image Resolution
-    const int imageWidth  = 128; // keep it in powers of 2!
-    const int imageHeight = 128; // keep it in powers of 2!
+    const int imageWidth  = 1028; // keep it in powers of 2!
+    const int imageHeight = 1028; // keep it in powers of 2!
     // Create the image (RGB Array) to be displayed
     unsigned char image[imageWidth*imageHeight*3];
 
-    glm::vec3 viewPoint = glm::vec3(-10, 0, 0);
-    glm::vec3 viewDir = glm::vec3(0,1,0);
-    glm::vec3 upward = glm::vec3(0,0,1);
-    float cameraWidth = 128;
-    float cameraHeight = 128;
+    glm::vec3 viewPoint = glm::vec3(0, 0, 0);
+    glm::vec3 viewDir = glm::vec3(1,0,0);
+    glm::vec3 upward = glm::vec3(0,1,0);
 
-    OrthoCamera camera(viewPoint, viewDir, upward, cameraWidth, cameraHeight);
+    OrthoCamera camera(viewPoint, viewDir, upward, imageWidth, imageHeight);
 
-    // Define a sphere at 0,0,0 with radius 1
+    // Define a sphere at 0,0,0 with radius .5
     glm::vec3 sphereOrigin = glm::vec3(0,0,0);
-    float radius = 1;
+    float radius = 50;
     Sphere sphere(sphereOrigin, radius);
 
     // Ray Equation: p(t) = e + t(s − e).
@@ -199,10 +200,11 @@ int main()
             glm::vec3 d = -(camera.getW());
 
             Ray ray(o,d);
+            
             HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
 
+
             if (!isinf(hitRecord.t)) { // if t is not infinity (hit)
-                std::cout << hitRecord.t << std::endl;
                 int idx = (i * imageWidth + j) * 3;
                 image[idx] = 255;
                 image[idx+1] = 255;
