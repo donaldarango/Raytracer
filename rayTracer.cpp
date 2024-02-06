@@ -6,9 +6,9 @@
 #include <glm/glm.hpp>
 
 #include <iostream>
-#include "Ray.hpp"
-#include "OrthoCamera.cpp"
-#include "Sphere.cpp"
+#include "include/OrthoCamera.hpp"
+#include "include/HitRecord.hpp"
+#include "include/Sphere.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -166,7 +166,7 @@ int main()
     // Create the image (RGB Array) to be displayed
     unsigned char image[imageWidth*imageHeight*3];
 
-    glm::vec3 viewPoint = glm::vec3(0, 10, 50);
+    glm::vec3 viewPoint = glm::vec3(0, 0, 10);
     glm::vec3 viewDir = glm::vec3(0,0,-1);
     glm::vec3 upward = glm::vec3(0,0,1);
     float cameraWidth = 128;
@@ -206,6 +206,12 @@ int main()
                 image[idx] = 255;
                 image[idx+1] = 255;
                 image[idx+2] = 255;
+            }
+            else {
+                int idx = (i * imageWidth + j) * 3;
+                image[idx] = 0;
+                image[idx+1] = 0;
+                image[idx+2] = 0;
             }
         }
     }
