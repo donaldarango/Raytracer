@@ -9,8 +9,9 @@ class HitRecord;
 class Surface {
 public:
     glm::vec3 origin;
+    glm::vec3 color;
 
-    Surface(glm::vec3 origin) : origin(origin) {}
+    Surface(glm::vec3 origin, glm::vec3 color) : origin(origin), color(color) {}
 
     virtual HitRecord hit(Ray &ray, float t0, float t1) = 0;
 };

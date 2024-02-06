@@ -175,10 +175,17 @@ int main()
 
     OrthoCamera camera(viewPoint, viewDir, upward, imageWidth, imageHeight);
 
-    // Define a sphere at 0,0,0 with radius .5
-    glm::vec3 sphereOrigin = glm::vec3(0,0,0);
-    float radius = 50;
-    Sphere sphere(sphereOrigin, radius);
+    glm::vec3 sphereOrigin1(-500,100,100);
+    float radius1 = 250;
+    glm::vec3 color1(255,0,0);
+    Sphere sphere1(sphereOrigin1, color1, radius1);
+
+    glm::vec3 sphereOrigin2(0,-100,-100);
+    float radius2 = 250;
+    glm::vec3 color2(0,255,0);
+    Sphere sphere2(sphereOrigin2, color2, radius2);
+
+    Surface* objects[2] = {&sphere1, &sphere2};
 
     // Ray Equation: p(t) = e + t(s − e).
     
@@ -186,11 +193,6 @@ int main()
     {
         for (int j = 0; j < imageHeight; j++)
         {
-            // int idx = (i * width + j) * 3;
-            // image[idx] = (unsigned char) (255 * i*j/height/width)  ; //((i+j) % 2) * 255;
-            // image[idx+1] = 0;
-            // image[idx+2] = 0;
-
             // compute (u,v) to get coordinates of pixel's position on the image plane, with respect to e
             float u = camera.DeterminePixelU(i, imageWidth);
             float v = camera.DeterminePixelV(j, imageHeight);
@@ -201,14 +203,27 @@ int main()
 
             Ray ray(o,d);
             
-            HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
+            // Best way to calculate triangle intersection problem
+            // Camera flipped??
+            
+            float tMin = INFINITY;
+            glm::vec3 color;
+            for (Surface* object : objects) {
+                HitRecord hitRecord = object->hit(ray, 0, INFINITY);
+                if (hitRecord.t < tMin){
+                     tMin = hitRecord.t;
+                     color = hitRecord.s->color;
+                }
+                   
+            }
+            // HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
 
 
-            if (!isinf(hitRecord.t)) { // if t is not infinity (hit)
+            if (!isinf(tMin)) { // if t is not infinity (hit)
                 int idx = (i * imageWidth + j) * 3;
-                image[idx] = 255;
-                image[idx+1] = 255;
-                image[idx+2] = 255;
+                image[idx] = color.x;
+                image[idx+1] = color.y;
+                image[idx+2] = color.z;
             }
             else {
                 int idx = (i * imageWidth + j) * 3;

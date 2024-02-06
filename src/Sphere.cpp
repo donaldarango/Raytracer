@@ -6,7 +6,7 @@
 #include <iostream>
 
 
-    Sphere::Sphere(glm::vec3 origin, float radius) : Surface(origin), radius(radius) {}
+    Sphere::Sphere(glm::vec3 origin, glm::vec3 color, float radius) : Surface(origin, color), radius(radius) {}
 
     HitRecord Sphere::hit(Ray &ray, float t0, float t1) { // returns t value 
 

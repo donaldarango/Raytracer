@@ -8,6 +8,7 @@ class Surface;
 class HitRecord {
 public:
 
+    HitRecord();
     HitRecord(Surface* s, float t, glm::vec3 n);
 
     Surface* s;
