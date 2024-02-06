@@ -166,17 +166,17 @@ int main()
     // Create the image (RGB Array) to be displayed
     unsigned char image[imageWidth*imageHeight*3];
 
-    glm::vec3 viewPoint = glm::vec3(0, 0, 10);
-    glm::vec3 viewDir = glm::vec3(0,0,-1);
+    glm::vec3 viewPoint = glm::vec3(-10, 0, 0);
+    glm::vec3 viewDir = glm::vec3(0,1,0);
     glm::vec3 upward = glm::vec3(0,0,1);
     float cameraWidth = 128;
     float cameraHeight = 128;
 
     OrthoCamera camera(viewPoint, viewDir, upward, cameraWidth, cameraHeight);
 
-    // Define a sphere at 0,0,0 with radius 5
+    // Define a sphere at 0,0,0 with radius 1
     glm::vec3 sphereOrigin = glm::vec3(0,0,0);
-    float radius = 5;
+    float radius = 1;
     Sphere sphere(sphereOrigin, radius);
 
     // Ray Equation: p(t) = e + t(s − e).
@@ -202,6 +202,7 @@ int main()
             HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
 
             if (!isinf(hitRecord.t)) { // if t is not infinity (hit)
+                std::cout << hitRecord.t << std::endl;
                 int idx = (i * imageWidth + j) * 3;
                 image[idx] = 255;
                 image[idx+1] = 255;
