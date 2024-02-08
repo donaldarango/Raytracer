@@ -4,11 +4,14 @@
 #include "Ray.hpp"
 #include "HitRecord.hpp"
 
+class HitRecord;
+class Ray;
+
 class Light {
 
 public:
 
-    glm::vec3 illuminate(Ray& ray, HitRecord& hrec);
+    virtual glm::vec3 illuminate(Ray& ray, HitRecord& hrec) = 0;
 
 };
 

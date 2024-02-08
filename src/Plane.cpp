@@ -18,7 +18,7 @@
         float t = numerator/denominator;
 
         // std::cout << t << std::endl;
-        if (t < t0 || t > t1 || denominator == 0 || numerator == 0)
+        if (t < t0 || t > t1 || denominator == 0)
             return HitRecord(this, INFINITY, normal);
         
         return HitRecord(this, t, normal);

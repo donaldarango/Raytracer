@@ -26,6 +26,9 @@ public:
         return b + (t - b)*(j + 0.5) / imageHeight;
     }
 
+    virtual glm::vec3 GenerateRayOrigin(float u, float v) = 0;
+    virtual glm::vec3 GenerateRayDirection(float u, float v) = 0;
+
     
     glm::vec3 getU() {
         return w;

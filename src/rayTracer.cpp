@@ -10,19 +10,27 @@
 
 #include <iostream>
 #include "OrthoCamera.hpp"
+#include "PerspCamera.hpp"
 #include "HitRecord.hpp"
 #include "Sphere.hpp"
 #include "Triangle.hpp"
 #include "Plane.hpp"
 #include "Material.hpp"
+#include "DirectionalLight.hpp"
+
+const int objectCount = 1;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p);
+void renderImage(Camera* camera, unsigned char* image, int imageWidth, int imageHeight, Surface* (&objects)[objectCount], 
+                 DirectionalLight light);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 800;
 
+bool SWAP = false;
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -167,106 +175,84 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // Image Resolution
-    const int imageWidth  = 1028; // keep it in powers of 2!
-    const int imageHeight = 1028; // keep it in powers of 2!
+    const int imageWidth  = 1024; // keep it in powers of 2!
+    const int imageHeight = 1024; // keep it in powers of 2!
     // Create the image (RGB Array) to be displayed
     unsigned char image[imageWidth*imageHeight*3];
 
-    glm::vec3 viewPoint = glm::vec3(0, 0, 0);
-    glm::vec3 viewDir = glm::vec3(0,0,1);
+    glm::vec3 viewPoint = glm::vec3(0,0,0);
+    glm::vec3 cameraTarget = glm::vec3(0,0,1);
+    glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
+    // glm::vec3 viewDir = glm::normalize(viewPoint - cameraTarget);
+
     glm::vec3 upward = glm::vec3(0,1,0);
+    float focalLength = 512;
 
-    OrthoCamera camera(viewPoint, viewDir, upward, imageWidth, imageHeight);
+    OrthoCamera orthoCamera(viewPoint, viewDir, upward, imageWidth, imageHeight);
+    PerspCamera perspCamera(viewPoint, viewDir, upward, imageWidth, imageHeight, focalLength);
 
-    // glm::vec3 planeOrigin(0,0,0);
-    // glm::vec3 planeColor(128,128,128);
-    // glm::vec3 planeNormal(0,1,0);
-    // Plane plane(planeOrigin, planeColor, planeNormal);
+    Camera *camera;
+    camera = &perspCamera;
 
-    glm::vec3 sphereOrigin1(0,0,0);
-    float radius1 = 250;
-    glm::vec3 color1(255,0,0);
-    Material sphere1Mat(color1, 0);
-    Sphere sphere1(sphereOrigin1, sphere1Mat, radius1);
+    float I = 1; // Between 0-1
+    glm::vec3 lightDirection(50,50,-50);
+    DirectionalLight dLight(I, lightDirection);
 
-    glm::vec3 sphereOrigin2(0,-100,0);
-    float radius2 = 250;
-    glm::vec3 color2(0,255,0);
-    Material sphere2Mat(color2, 0);
-    Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
+    glm::vec3 planeOrigin(0,-1,0);
+    glm::vec3 planeColor(128,128,128);
+    Material planeMaterial(planeColor, 1, 0, 0);
+    glm::vec3 planeNormal(0,1,0);
+    Plane plane(planeOrigin, planeMaterial, planeNormal);
 
+    glm::vec3 sphereOrigin1(2,1,10);
+    float radius1 = 2;
+    glm::vec3 color1(100,0,0);
+    Material sphere1Mat(color1, 1, 0, 0.0f);
+    Material sphereMaterial(color1, 0.5f ,0.5f, 0.5f);
+    Sphere sphere1(sphereOrigin1, sphereMaterial, radius1);
+
+    // glm::vec3 sphereOrigin2(0,-100,0);
+    // float radius2 = 250;
+    // glm::vec3 color2(0,255,0);
+    // Material sphere2Mat(color2, 0);
+    // Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
+
+    // Tetrahedron
     glm::vec3 origin(0,0,0);
-    glm::vec3 color(0,0,255);
-    glm::vec3 vertexA(100,150,200);
-    glm::vec3 vertexB(100,150,-200);
-    glm::vec3 vertexC(100,0,0);
-    Material triangleMat(color, 0);
-    Triangle triangle(origin, triangleMat, vertexA, vertexB, vertexC);
+    glm::vec3 tColor1(0,128,128);
+    glm::vec3 tColor2(128,128,0);
+    Material triangleMat1(tColor1, 1, 0, 0);
+    Material triangleMat2(tColor2, 1, 0, 0);
 
-    Surface* objects[3] = {&sphere1, &sphere2, &triangle};
-    // Surface* objects[1] = {&triangle};
+    // glm::vec3 vertexA = glm::vec3(9,0,6) * 50.0f;
+    // glm::vec3 vertexB = glm::vec3(6,0,0) * 50.0f;
+    // glm::vec3 vertexC = glm::vec3(4,0,3) * 50.0f;
+    // glm::vec3 vertexD = glm::vec3(7,5,2) * 50.0f;
+
+    // Triangle frontTriangle(origin, triangleMat2, vertexA, vertexB, vertexD);
+    // Triangle bottomTriangle(origin, triangleMat1 , vertexA, vertexC, vertexB);
+    // Triangle leftTriangle(origin, triangleMat1, vertexD, vertexC, vertexA);
+    // Triangle rightTriangle(origin, triangleMat1, vertexC, vertexD, vertexB);
+
+    glm::vec3 vertex1 = glm::vec3(0,0,1.25);
+    glm::vec3 vertex2 = glm::vec3(5,10,2.5);
+    glm::vec3 vertex3 = glm::vec3(-5,10,2.5);
+    glm::vec3 vertex4 = glm::vec3(0,10,0);
+
+    Triangle frontTriangle2(origin, triangleMat2, vertex1, vertex3, vertex4);
+    Triangle bottomTriangle2(origin, triangleMat1 , vertex2, vertex3, vertex4);
+    Triangle leftTriangle2(origin, triangleMat1, vertex1, vertex2, vertex4);
+    Triangle rightTriangle2(origin, triangleMat2, vertex1, vertex2, vertex3);
+
+
+    Surface* objects[objectCount] = {&sphere1};
+    // Surface* objects[objectCount] = {&sphere1, &frontTriangle2, &bottomTriangle2, &leftTriangle2, 
+    //                                 &rightTriangle2, &plane};
+    
 
 
     // Ray Equation: p(t) = e + t(s − e).
-    
-    for(int i = 0; i < imageWidth; i++)
-    {
-        for (int j = 0; j < imageHeight; j++)
-        {
-            // compute (u,v) to get coordinates of pixel's position on the image plane, with respect to e
-            float u = camera.DeterminePixelU(i, imageWidth);
-            float v = camera.DeterminePixelV(j, imageHeight);
-
-            // create ray from pixel position
-            glm::vec3 o = camera.GenerateRayOrigin(u,v); // e
-            glm::vec3 d = -(camera.getW());
-
-            Ray ray(o,d);
-            
-            // Best way to calculate triangle intersection problem
-            // Camera flipped??
-            
-            float tMin = INFINITY;
-            glm::vec3 color;
-            for (Surface* object : objects) {
-                HitRecord hitRecord = object->hit(ray, 0, INFINITY);
-                if (hitRecord.t < tMin){
-                     tMin = hitRecord.t;
-                     color = hitRecord.s->material.color;
-                }
-                   
-            }
-            // HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
-
-
-            // if (!isinf(tMin)) { // if t is not infinity (hit)
-            if (tMin != INFINITY) { // if t is not infinity (hit)
-                int idx = (i * imageWidth + j) * 3;
-                image[idx] = color.x;
-                image[idx+1] = color.y;
-                image[idx+2] = color.z;
-            }
-            else {
-                int idx = (i * imageWidth + j) * 3;
-                image[idx] = 0;
-                image[idx+1] = 0;
-                image[idx+2] = 0;
-            }
-        }
-    }
-
-    unsigned char *data = &image[0];
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-   
-
+    renderImage(camera, image, imageWidth, imageHeight, objects, dLight);
 
     // render loop
     // -----------
@@ -275,6 +261,7 @@ int main()
         // input
         // -----
         processInput(window);
+        // cameraSwap(window, camera, orthoCamera, perspCamera);
 
         // render
         // ------
@@ -307,13 +294,92 @@ int main()
     return 0;
 }
 
+void renderImage(Camera* camera, unsigned char* image, int imageWidth, int imageHeight, Surface* (&objects)[objectCount], 
+                DirectionalLight light) {
+
+    for(int i = 0; i < imageWidth; i++)
+    {
+        for (int j = 0; j < imageHeight; j++)
+        {
+            // compute (u,v) to get coordinates of pixel's position on the image plane, with respect to e
+            float u = camera->DeterminePixelU(j, imageWidth); // FLIPPED I AND J AND NOW WORKS????
+            float v = camera->DeterminePixelV(i, imageHeight);
+
+            // create ray from pixel position
+            glm::vec3 o = camera->GenerateRayOrigin(u,v); 
+            glm::vec3 d = camera->GenerateRayDirection(u,v);
+
+            Ray ray(o,d);
+            
+            // Camera flipped??
+            
+            float tMin = INFINITY;
+            glm::vec3 color = glm::vec3(0,0,0);
+            for (Surface* object : objects) {
+                HitRecord hitRecord = object->hit(ray, 0, INFINITY);
+                if (hitRecord.t < tMin){
+                     tMin = hitRecord.t;
+                     color = light.illuminate(ray, hitRecord);
+                }
+                   
+            }
+            // HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
+
+
+
+            // if (!isinf(tMin)) { // if t is not infinity (hit)
+            if (tMin != INFINITY) { // if t is not infinity (hit)
+                int idx = (i * imageWidth + j) * 3;
+                image[idx] = color.x;
+                image[idx+1] = color.y;
+                image[idx+2] = color.z;
+            }
+            else {
+                int idx = (i * imageWidth + j) * 3;
+                image[idx] = 0;
+                image[idx+1] = 0;
+                image[idx+2] = 0;
+            }
+        }
+    }
+
+    unsigned char *data = &image[0];
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+}
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}   
+    
+}
+
+void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p) {
+    // default: 
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+
+        if (SWAP) {
+            camera = &o;
+            SWAP = !SWAP;
+        }
+        else {
+            camera = &p;
+            SWAP = !SWAP;
+        }
+        std::cout << "SWAP: " << SWAP << std::endl;
+    }
+
+}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
