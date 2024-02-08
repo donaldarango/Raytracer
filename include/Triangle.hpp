@@ -4,17 +4,18 @@
 #include "Surface.hpp"
 
 class HitRecord;
+class Material;
 
 class Triangle : public Surface {
 public:
-    Triangle(glm::vec3 origin, glm::vec3 color, glm::vec3 a, glm::vec3 b, glm::vec3 c);
+    Triangle(glm::vec3 origin, Material &material, glm::vec3 vertexA, glm::vec3 vertexB, glm::vec3 vertexC);
 
     HitRecord hit(Ray &ray, float t0, float t1) override; // returns t value 
 
     // Triangle vertices
-    glm::vec3 a;
-    glm::vec3 b;
-    glm::vec3 c;
+    glm::vec3 vertexA;
+    glm::vec3 vertexB;
+    glm::vec3 vertexC;
 
 };
 

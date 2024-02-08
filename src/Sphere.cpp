@@ -6,16 +6,11 @@
 #include <iostream>
 
 
-    Sphere::Sphere(glm::vec3 origin, glm::vec3 color, float radius) : Surface(origin, color), radius(radius) {}
+    Sphere::Sphere(glm::vec3 origin, Material &material, float radius) : Surface(origin, material), radius(radius) {}
 
     HitRecord Sphere::hit(Ray &ray, float t0, float t1) { // returns t value 
 
-
         // compute discriminate | (d • (e - c))^2 - (d • d)((e - c)•(e - c) - R^2)
-        // float discriminate = pow(glm::dot(ray.getDirection(), (ray.getOrigin() - origin)), 2) 
-        //             - glm::dot(ray.getDirection(), ray.getDirection()) 
-        //             *(glm::dot((ray.getOrigin() - origin), (ray.getOrigin() - origin)))
-        //             - pow(radius, 2);
         
         float B = glm::dot(ray.getDirection(), (ray.getOrigin() - origin)); // d • (e - c)^2
         float A = glm::dot(ray.getDirection(), ray.getDirection()); // (d • d)
@@ -56,6 +51,6 @@
             t = max;
         }
 
-        return HitRecord(this, t, (ray.evaluate(t) - origin) * 2.0f);
+        return HitRecord(this, t, (ray.evaluate(t) - origin) / radius);
 
     }

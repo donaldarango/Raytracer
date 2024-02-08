@@ -9,9 +9,12 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
-#include "include/OrthoCamera.hpp"
-#include "include/HitRecord.hpp"
-#include "include/Sphere.hpp"
+#include "OrthoCamera.hpp"
+#include "HitRecord.hpp"
+#include "Sphere.hpp"
+#include "Triangle.hpp"
+#include "Plane.hpp"
+#include "Material.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -170,22 +173,39 @@ int main()
     unsigned char image[imageWidth*imageHeight*3];
 
     glm::vec3 viewPoint = glm::vec3(0, 0, 0);
-    glm::vec3 viewDir = glm::vec3(1,0,0);
+    glm::vec3 viewDir = glm::vec3(0,0,1);
     glm::vec3 upward = glm::vec3(0,1,0);
 
     OrthoCamera camera(viewPoint, viewDir, upward, imageWidth, imageHeight);
 
-    glm::vec3 sphereOrigin1(-500,100,100);
+    // glm::vec3 planeOrigin(0,0,0);
+    // glm::vec3 planeColor(128,128,128);
+    // glm::vec3 planeNormal(0,1,0);
+    // Plane plane(planeOrigin, planeColor, planeNormal);
+
+    glm::vec3 sphereOrigin1(0,0,0);
     float radius1 = 250;
     glm::vec3 color1(255,0,0);
-    Sphere sphere1(sphereOrigin1, color1, radius1);
+    Material sphere1Mat(color1, 0);
+    Sphere sphere1(sphereOrigin1, sphere1Mat, radius1);
 
-    glm::vec3 sphereOrigin2(0,-100,-100);
+    glm::vec3 sphereOrigin2(0,-100,0);
     float radius2 = 250;
     glm::vec3 color2(0,255,0);
-    Sphere sphere2(sphereOrigin2, color2, radius2);
+    Material sphere2Mat(color2, 0);
+    Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
 
-    Surface* objects[2] = {&sphere1, &sphere2};
+    glm::vec3 origin(0,0,0);
+    glm::vec3 color(0,0,255);
+    glm::vec3 vertexA(100,150,200);
+    glm::vec3 vertexB(100,150,-200);
+    glm::vec3 vertexC(100,0,0);
+    Material triangleMat(color, 0);
+    Triangle triangle(origin, triangleMat, vertexA, vertexB, vertexC);
+
+    Surface* objects[3] = {&sphere1, &sphere2, &triangle};
+    // Surface* objects[1] = {&triangle};
+
 
     // Ray Equation: p(t) = e + t(s − e).
     
@@ -212,14 +232,15 @@ int main()
                 HitRecord hitRecord = object->hit(ray, 0, INFINITY);
                 if (hitRecord.t < tMin){
                      tMin = hitRecord.t;
-                     color = hitRecord.s->color;
+                     color = hitRecord.s->material.color;
                 }
                    
             }
             // HitRecord hitRecord = sphere.hit(ray, 0, INFINITY);
 
 
-            if (!isinf(tMin)) { // if t is not infinity (hit)
+            // if (!isinf(tMin)) { // if t is not infinity (hit)
+            if (tMin != INFINITY) { // if t is not infinity (hit)
                 int idx = (i * imageWidth + j) * 3;
                 image[idx] = color.x;
                 image[idx+1] = color.y;

@@ -1,18 +1,18 @@
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef PLANE_H
+#define PLANE_H
 
 #include "Surface.hpp"
 
 class HitRecord;
 class Material;
 
-class Sphere : public Surface {
+class Plane : public Surface {
 public:
-    Sphere(glm::vec3 origin, Material &material, float radius);
+    Plane(glm::vec3 origin, Material &material, glm::vec3 normal);
 
     HitRecord hit(Ray &ray, float t0, float t1) override; // returns t value 
-    
-    float radius;
+
+    glm::vec3 normal;
 
 };
 

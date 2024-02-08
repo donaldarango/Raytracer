@@ -9,11 +9,11 @@ public:
     Camera(glm::vec3 viewPoint, glm::vec3 viewDir, glm::vec3 upward, float width, float height) {
         this->viewPoint = viewPoint; 
         this->viewDir = viewDir;
-        this-> upward = upward;
-        this->l = (width / 2);
-        this->r = -(width / 2);
-        this->b = (height / 2);
-        this->t = -(height / 2);
+        this->upward = upward;
+        this->l = -(width / 2);
+        this->r = (width / 2);
+        this->b = -(height / 2);
+        this->t = (height / 2);
     }
 
     float DeterminePixelU(int i, int imageWidth) {
