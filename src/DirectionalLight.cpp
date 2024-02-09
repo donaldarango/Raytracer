@@ -15,7 +15,7 @@ glm::vec3 DirectionalLight::illuminate(Ray &ray, HitRecord &hrec) {
 
     glm::vec3 l = direction;
     glm::vec3 n = hrec.n;
-    glm::vec3 v = -ray.getDirection();
+    glm::vec3 v = glm::normalize(-ray.getDirection());
 
     // E = Hcosθ
     glm::vec3 color = hrec.s->material.evaluateColor(l,v,n);

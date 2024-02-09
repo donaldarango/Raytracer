@@ -193,7 +193,7 @@ int main()
         glm::vec3 cameraTarget = glm::vec3(.5,.7,1);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
         glm::vec3 upward = glm::vec3(0,1,0);
-        float focalLength = 512;
+        float focalLength = 10;
 
         PerspCamera perspCamera(viewPoint, viewDir, upward, imageWidth, imageHeight, focalLength);
 
@@ -216,13 +216,13 @@ int main()
     glm::vec3 lightDirection(0,10,0);
     DirectionalLight dLight(I, lightDirection);
 
-    glm::vec3 planeOrigin(0,-1,0);
+    glm::vec3 planeOrigin(0,-3,0);
     glm::vec3 planeColor(128,128,128);
     Material planeMaterial(planeColor, 0.4f, 0.4f, 0);
     glm::vec3 planeNormal(0,1,0);
     Plane plane(planeOrigin, planeMaterial, planeNormal);
 
-    glm::vec3 sphereOrigin1(2,1,10);
+    glm::vec3 sphereOrigin1(2,2,10);
     float radius1 = 2;
     glm::vec3 color1(255,0,0);
     Material sphereMaterial(color1, 0.2f , 0.4f, 0.4f);

@@ -10,10 +10,14 @@ public:
         this->viewPoint = viewPoint; 
         this->viewDir = viewDir;
         this->upward = upward;
-        this->l = -(width / 2);
-        this->r = (width / 2);
-        this->b = -(height / 2);
-        this->t = (height / 2);
+        // this->l = -(width / 2);
+        // this->r = (width / 2);
+        // this->b = -(height / 2);
+        // this->t = (height / 2);
+        this->l = -10.0f;
+        this->r = 10.0f;
+        this->b = -10.0f;
+        this->t = 10.0f;
     }
 
     float DeterminePixelU(int i, int imageWidth) {
