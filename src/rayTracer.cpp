@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
@@ -18,7 +17,7 @@
 #include "Material.hpp"
 #include "DirectionalLight.hpp"
 
-const int objectCount = 1;
+const int objectCount = 6;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -58,6 +57,11 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
 int main()
 {
+    int input;
+    std::cout << "Press 0 for Orthographic View or 1 for Perspective View." << std::endl;
+    std::cin >> input;
+    std::cout << std::endl << input << " is the selected option." << std::endl;
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -178,37 +182,50 @@ int main()
     const int imageWidth  = 1024; // keep it in powers of 2!
     const int imageHeight = 1024; // keep it in powers of 2!
     // Create the image (RGB Array) to be displayed
-    unsigned char image[imageWidth*imageHeight*3];
+    unsigned char* image = new unsigned char[imageWidth*imageHeight*3];
 
-    glm::vec3 viewPoint = glm::vec3(0,0,0);
-    glm::vec3 cameraTarget = glm::vec3(0,0,1);
-    glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
     // glm::vec3 viewDir = glm::normalize(viewPoint - cameraTarget);
 
-    glm::vec3 upward = glm::vec3(0,1,0);
-    float focalLength = 512;
-
-    OrthoCamera orthoCamera(viewPoint, viewDir, upward, imageWidth, imageHeight);
-    PerspCamera perspCamera(viewPoint, viewDir, upward, imageWidth, imageHeight, focalLength);
-
     Camera *camera;
-    camera = &perspCamera;
+
+    if(input) { 
+        glm::vec3 viewPoint = glm::vec3(0,1,0);
+        glm::vec3 cameraTarget = glm::vec3(.5,.7,1);
+        glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
+        glm::vec3 upward = glm::vec3(0,1,0);
+        float focalLength = 512;
+
+        PerspCamera perspCamera(viewPoint, viewDir, upward, imageWidth, imageHeight, focalLength);
+
+        camera = &perspCamera;
+    }
+    else {
+
+        glm::vec3 viewPoint = glm::vec3(0,0,0);
+        glm::vec3 cameraTarget = glm::vec3(0,0,1);
+        glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
+        glm::vec3 upward = glm::vec3(0,1,0);
+
+        OrthoCamera orthoCamera(viewPoint, viewDir, upward, imageWidth, imageHeight);
+
+        camera = &orthoCamera;
+    }
+    
 
     float I = 1; // Between 0-1
-    glm::vec3 lightDirection(50,50,-50);
+    glm::vec3 lightDirection(0,10,0);
     DirectionalLight dLight(I, lightDirection);
 
     glm::vec3 planeOrigin(0,-1,0);
     glm::vec3 planeColor(128,128,128);
-    Material planeMaterial(planeColor, 1, 0, 0);
+    Material planeMaterial(planeColor, 0.4f, 0.4f, 0);
     glm::vec3 planeNormal(0,1,0);
     Plane plane(planeOrigin, planeMaterial, planeNormal);
 
     glm::vec3 sphereOrigin1(2,1,10);
     float radius1 = 2;
-    glm::vec3 color1(100,0,0);
-    Material sphere1Mat(color1, 1, 0, 0.0f);
-    Material sphereMaterial(color1, 0.5f ,0.5f, 0.5f);
+    glm::vec3 color1(255,0,0);
+    Material sphereMaterial(color1, 0.2f , 0.4f, 0.4f);
     Sphere sphere1(sphereOrigin1, sphereMaterial, radius1);
 
     // glm::vec3 sphereOrigin2(0,-100,0);
@@ -220,9 +237,9 @@ int main()
     // Tetrahedron
     glm::vec3 origin(0,0,0);
     glm::vec3 tColor1(0,128,128);
-    glm::vec3 tColor2(128,128,0);
-    Material triangleMat1(tColor1, 1, 0, 0);
-    Material triangleMat2(tColor2, 1, 0, 0);
+    glm::vec3 tColor2(0,128,128);
+    Material triangleMat1(tColor1, 0.4f, 0.0f, 0.6f);
+    Material triangleMat2(tColor2, 0.4f, 0.3f, 0.3f);
 
     // glm::vec3 vertexA = glm::vec3(9,0,6) * 50.0f;
     // glm::vec3 vertexB = glm::vec3(6,0,0) * 50.0f;
@@ -234,20 +251,20 @@ int main()
     // Triangle leftTriangle(origin, triangleMat1, vertexD, vertexC, vertexA);
     // Triangle rightTriangle(origin, triangleMat1, vertexC, vertexD, vertexB);
 
-    glm::vec3 vertex1 = glm::vec3(0,0,1.25);
-    glm::vec3 vertex2 = glm::vec3(5,10,2.5);
-    glm::vec3 vertex3 = glm::vec3(-5,10,2.5);
-    glm::vec3 vertex4 = glm::vec3(0,10,0);
+    glm::vec3 vertex1 = glm::vec3(4,0,3);
+    glm::vec3 vertex2 = glm::vec3(2,0,5);
+    glm::vec3 vertex3 = glm::vec3(2,0,3);
+    glm::vec3 vertex4 = glm::vec3(3,1,4);
 
-    Triangle frontTriangle2(origin, triangleMat2, vertex1, vertex3, vertex4);
-    Triangle bottomTriangle2(origin, triangleMat1 , vertex2, vertex3, vertex4);
-    Triangle leftTriangle2(origin, triangleMat1, vertex1, vertex2, vertex4);
-    Triangle rightTriangle2(origin, triangleMat2, vertex1, vertex2, vertex3);
+    Triangle backTriangle2(origin, triangleMat1, vertex4, vertex1, vertex2);
+    Triangle bottomTriangle2(origin, triangleMat1 , vertex1, vertex2, vertex3);
+    Triangle leftTriangle2(origin, triangleMat2, vertex1, vertex3, vertex4);
+    Triangle rightTriangle2(origin, triangleMat1, vertex2, vertex3, vertex4);
 
 
-    Surface* objects[objectCount] = {&sphere1};
-    // Surface* objects[objectCount] = {&sphere1, &frontTriangle2, &bottomTriangle2, &leftTriangle2, 
-    //                                 &rightTriangle2, &plane};
+    // Surface* objects[objectCount] = {&sphere1};
+    Surface* objects[objectCount] = {&sphere1, &backTriangle2, &bottomTriangle2, &leftTriangle2, 
+                                    &rightTriangle2, &plane};
     
 
 
@@ -311,8 +328,6 @@ void renderImage(Camera* camera, unsigned char* image, int imageWidth, int image
 
             Ray ray(o,d);
             
-            // Camera flipped??
-            
             float tMin = INFINITY;
             glm::vec3 color = glm::vec3(0,0,0);
             for (Surface* object : objects) {
@@ -365,7 +380,6 @@ void processInput(GLFWwindow *window)
 }
 
 void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p) {
-    // default: 
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 
         if (SWAP) {

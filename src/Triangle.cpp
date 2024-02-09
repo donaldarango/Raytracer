@@ -4,6 +4,9 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+
 
 
     Triangle::Triangle(glm::vec3 origin, Material &material, glm::vec3 vertexA, glm::vec3 vertexB, glm::vec3 vertexC) 
@@ -52,6 +55,6 @@
         if ((beta < 0) || (beta > 1 - gamma))
             return HitRecord(this, INFINITY, glm::vec3(0,0,0));
 
-        return HitRecord(this, t, glm::cross(vertexA, vertexB));
+        return HitRecord(this, t, glm::normalize(glm::cross(vertexB - vertexA, vertexC - vertexA)));
 
     }

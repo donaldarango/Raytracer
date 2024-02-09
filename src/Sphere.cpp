@@ -1,5 +1,5 @@
-#include "../include/Sphere.hpp"
-#include "../include/HitRecord.hpp"
+#include "Sphere.hpp"
+#include "HitRecord.hpp"
 #include <glm/geometric.hpp>
 #include <cmath>
 #include <algorithm>
