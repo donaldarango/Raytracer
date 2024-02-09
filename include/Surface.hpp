@@ -7,6 +7,7 @@
 
 class HitRecord;
 class Material;
+class Ray;
 
 class Surface {
 public:
