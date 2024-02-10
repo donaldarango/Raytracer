@@ -17,16 +17,17 @@
 #include "Material.hpp"
 #include "DirectionalLight.hpp"
 
-const int objectCount = 6;
-const int maxRecursionDepth = 3;
-const float k_s = 0.2f;
+const int objectCount = 7;
+const int maxRecursionDepth = 1;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p);
 void renderImage(Camera* camera, unsigned char* image, int imageWidth, int imageHeight, Surface* (&objects)[objectCount], 
                  DirectionalLight light);
-glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, float &tMin, Surface** objects, int objectCount, int &recursionDepth);
+glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, glm::vec3 color, Surface* (&objects)[objectCount], int &recursionDepth);
+HitRecord firstHit(Surface* (&objects)[objectCount], Ray ray);
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -136,10 +137,10 @@ int main()
     // ------------------------------------------------------------------
     float vertices[] = {
         // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+         1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+        1.0f,  -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {  
         0, 1, 3, // first triangle
@@ -187,13 +188,11 @@ int main()
     // Create the image (RGB Array) to be displayed
     unsigned char* image = new unsigned char[imageWidth*imageHeight*3];
 
-    // glm::vec3 viewDir = glm::normalize(viewPoint - cameraTarget);
-
     Camera *camera;
 
     if(input) { 
-        glm::vec3 viewPoint = glm::vec3(0,2,0);
-        glm::vec3 cameraTarget = glm::vec3(.7,.7,3);
+        glm::vec3 viewPoint = glm::vec3(1,2,0);
+        glm::vec3 cameraTarget = glm::vec3(1.4,1.4,3);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
         glm::vec3 upward = glm::vec3(0,1,0);
         float focalLength = 10;
@@ -204,8 +203,8 @@ int main()
     }
     else {
 
-        glm::vec3 viewPoint = glm::vec3(0,0,0);
-        glm::vec3 cameraTarget = glm::vec3(0,0,1);
+        glm::vec3 viewPoint = glm::vec3(0,5,0);
+        glm::vec3 cameraTarget = glm::vec3(0,-2,10);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
         glm::vec3 upward = glm::vec3(0,1,0);
 
@@ -216,43 +215,33 @@ int main()
     
 
     float I = 1; // Between 0-1
-    glm::vec3 lightDirection(0,10,0);
+    glm::vec3 lightDirection(20,30,0);
     DirectionalLight dLight(I, lightDirection);
 
     glm::vec3 planeOrigin(0,0,0);
-    glm::vec3 planeColor(128,128,128);
-    Material planeMaterial(planeColor, 0.3f, 0.3f, 0.4f, true);
+    glm::vec3 planeColor(255,255,255);
+    Material planeMaterial(planeColor, 0.3f, 0.3f, 0.4f, 0.5f, true);
     glm::vec3 planeNormal(0,1,0);
     Plane plane(planeOrigin, planeMaterial, planeNormal);
 
     glm::vec3 sphereOrigin1(2,2,10);
     float radius1 = 2;
     glm::vec3 color1(255,0,0);
-    Material sphereMaterial(color1, 0.2f , 0.4f, 0.4f, false);
-    Sphere sphere1(sphereOrigin1, sphereMaterial, radius1);
+    Material sphereMaterial(color1, 0.2f , 0.4f, 0.4f, 0.5f, false);
+    Sphere sphere1(sphereOrigin1, sphereMaterial, radius1); 
 
-    // glm::vec3 sphereOrigin2(0,-100,0);
-    // float radius2 = 250;
-    // glm::vec3 color2(0,255,0);
-    // Material sphere2Mat(color2, 0);
-    // Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
+    glm::vec3 sphereOrigin2(-2,1,10);
+    float radius2 = 1;
+    glm::vec3 color2(0,255,0);
+    Material sphere2Mat(color2, 0.2f , 0.2f, 0.6f, 0.5f, false);
+    Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
 
     // Tetrahedron
     glm::vec3 origin(0,0,0);
-    glm::vec3 tColor1(0,128,128);
-    glm::vec3 tColor2(0,128,128);
-    Material triangleMat1(tColor1, 0.4f, 0.0f, 0.6f, false);
-    Material triangleMat2(tColor2, 0.4f, 0.3f, 0.3f, false);
-
-    // glm::vec3 vertexA = glm::vec3(9,0,6) * 50.0f;
-    // glm::vec3 vertexB = glm::vec3(6,0,0) * 50.0f;
-    // glm::vec3 vertexC = glm::vec3(4,0,3) * 50.0f;
-    // glm::vec3 vertexD = glm::vec3(7,5,2) * 50.0f;
-
-    // Triangle frontTriangle(origin, triangleMat2, vertexA, vertexB, vertexD);
-    // Triangle bottomTriangle(origin, triangleMat1 , vertexA, vertexC, vertexB);
-    // Triangle leftTriangle(origin, triangleMat1, vertexD, vertexC, vertexA);
-    // Triangle rightTriangle(origin, triangleMat1, vertexC, vertexD, vertexB);
+    glm::vec3 tColor1(0,255,255);
+    glm::vec3 tColor2(255,255,0);
+    Material triangleMat1(tColor1, 0.4f, 0.3f, 0.3f, 0.5f, false);
+    Material triangleMat2(tColor2, 0.4f, 0.3f, 0.3f, 0.5f, false);
 
     glm::vec3 vertex1 = glm::vec3(4,0,3);
     glm::vec3 vertex2 = glm::vec3(2,0,5);
@@ -266,7 +255,7 @@ int main()
 
 
     // Surface* objects[objectCount] = {&sphere1};
-    Surface* objects[objectCount] = {&sphere1, &backTriangle2, &bottomTriangle2, &leftTriangle2, 
+    Surface* objects[objectCount] = {&sphere1, &sphere2, &backTriangle2, &bottomTriangle2, &leftTriangle2, 
                                     &rightTriangle2, &plane};
     
 
@@ -332,25 +321,12 @@ void renderImage(Camera* camera, unsigned char* image, int imageWidth, int image
 
             Ray ray(o,d);
             
-            float tMin = INFINITY;
             HitRecord hitRecord;
-            glm::vec3 color = shade(ray, light, hitRecord, tMin, objects, objectCount, recursionDepth);
-
-
-            // SHADOWS ! 
-            // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/shadow.pdf
-
-            // glm::vec3 shadowRayDir = light.direction;
-            // float epsilon = 0.5f;
-            // glm::vec3 shadowRayOrigin = ray.evaluate(tMin) + epsilon*(shadowRayDir);
-            
-            // Ray shadowRay(shadowRayOrigin, shadowRayDir);
-            // bool inShadow = shadowRay.inShadow(objects, objectCount);
-            // if (inShadow)
-            //     color = glm::vec3(0,0,0);
+            glm::vec3 baseColor(0,0,0);
+            glm::vec3 color = shade(ray, light, hitRecord, baseColor, objects, recursionDepth);
                 
             
-            if (tMin != INFINITY) { // if t is not infinity (hit)
+            if (hitRecord.t != INFINITY) { // if t is not infinity (hit)
                 int idx = (i * imageWidth + j) * 3;
                 image[idx] = color.x;
                 image[idx+1] = color.y;
@@ -377,34 +353,58 @@ void renderImage(Camera* camera, unsigned char* image, int imageWidth, int image
     }
 }
 
-glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, float &tMin, Surface** objects, int objectCount, int &recursionDepth) {
-            glm::vec3 color = glm::vec3(0,0,0);
-            for (int i = 0; i < objectCount; i++) {
-                hitRecord = objects[i]->hit(ray, 0, INFINITY);
-                if (hitRecord.t < tMin) {
-                     tMin = hitRecord.t;
-                     color = light.illuminate(ray, hitRecord);
-                }
+glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, glm::vec3 color, Surface* (&objects)[objectCount], int &recursionDepth) {
+            
+            hitRecord = firstHit(objects, ray);
+            if (hitRecord.t != INFINITY) {
+                color = light.illuminate(ray, hitRecord);
             }
 
+            // SHADOWS ! 
+            // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/shadow.pdf
 
+            // glm::vec3 shadowRayDir = light.direction;
+            // float epsilon = 0.1f;
+            // glm::vec3 shadowRayOrigin = ray.evaluate(hitRecord.t) + epsilon*(shadowRayDir);
+            
+            // Ray shadowRay(shadowRayOrigin, shadowRayDir);
+            // bool inShadow = shadowRay.inShadow(objects, objectCount);
+            // if (inShadow)
+            //     color = glm::vec3(0,0,0);
+            
             // Mirror Reflection (Glaze)
             // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/reflection_refraction.pdf
             if (hitRecord.t != INFINITY) {
                 if (recursionDepth < maxRecursionDepth) {
                     if (hitRecord.s->material.glazed) {
-                        glm::vec3 reflectionDir = -2 * (glm::dot(ray.getDirection(), hitRecord.n)) * hitRecord.n + ray.getDirection();
-                        float epsilon = 0.5f;
-                        glm::vec3 reflectOrigin = ray.evaluate(tMin) + epsilon*(reflectionDir);
+                        // glm::vec3 reflectionDir = glm::normalize(-2 * (glm::dot(ray.getDirection(), hitRecord.n)) * hitRecord.n + ray.getDirection());
+                        glm::vec3 reflectionDir = ray.getDirection() - 2 * (glm::dot(ray.getDirection(), hitRecord.n)) * hitRecord.n;
+                        float epsilon = 0.01f;
+                        glm::vec3 reflectOrigin = ray.evaluate(hitRecord.t) + epsilon*(reflectionDir);
                         Ray reflectRay = Ray(reflectOrigin, reflectionDir);
+
                         recursionDepth += 1;
-                        color += k_s * shade(reflectRay, light, hitRecord, tMin, objects, objectCount, recursionDepth);
+                        HitRecord hitRecordR = HitRecord();
+                        glm::vec3 L_m = hitRecord.s->material.k_m * shade(reflectRay, light, hitRecordR, color, objects, recursionDepth);
+                        color += L_m;
+                        color = glm::clamp(color, 0.0f, 255.0f); // to prevent overflow
                     }
                 }
             }
-            
-            // std::cout << "color: " << glm::to_string(color) << std::endl;
             return color;
+}
+
+HitRecord firstHit(Surface* (&objects)[objectCount], Ray ray) {
+    HitRecord firstHit;
+    float tMin = INFINITY;
+    for (int i = 0; i < objectCount; i++) {
+        HitRecord hit = objects[i]->hit(ray, 0, INFINITY);
+        if (hit.t < tMin) {
+            tMin = hit.t;
+            firstHit = hit;
+        }
+    }
+    return firstHit;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly

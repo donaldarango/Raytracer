@@ -7,7 +7,7 @@ class Material {
 
 public:
 
-    Material(glm::vec3 color, float k_a, float k_d, float k_s, bool glazed);
+    Material(glm::vec3 color, float k_a, float k_d, float k_s, float k_m, bool glazed);
 
     glm::vec3 evaluateColor(glm::vec3 l, glm::vec3 v, glm::vec3 n);
 
@@ -15,6 +15,7 @@ public:
     float k_a; // ambient coefficient
     float k_d; // diffuse coefficient
     float k_s; // specular coeefficient
+    float k_m; // mirror coefficient
     bool glazed; 
 
 };
