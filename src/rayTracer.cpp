@@ -8,6 +8,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include "OrthoCamera.hpp"
 #include "PerspCamera.hpp"
 #include "HitRecord.hpp"
@@ -22,11 +24,12 @@ const int maxRecursionDepth = 1;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p);
+
 void renderImage(Camera* camera, unsigned char* image, int imageWidth, int imageHeight, Surface* (&objects)[objectCount], 
                  DirectionalLight light);
 glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, glm::vec3 color, Surface* (&objects)[objectCount], int &recursionDepth);
 HitRecord firstHit(Surface* (&objects)[objectCount], Ray ray);
+void writePPM(const char* filename, unsigned char* data, int width, int height);
 
 
 // settings
@@ -61,10 +64,10 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
 int main()
 {
-    int input;
-    std::cout << "Press 0 for Orthographic View or 1 for Perspective View." << std::endl;
-    std::cin >> input;
-    std::cout << std::endl << input << " is the selected option." << std::endl;
+    // int input;
+    // std::cout << "Press 0 for Orthographic View or 1 for Perspective View." << std::endl;
+    // std::cin >> input;
+    // std::cout << std::endl << input << " is the selected option." << std::endl;
 
     // glfw: initialize and configure
     // ------------------------------
@@ -190,6 +193,7 @@ int main()
 
     Camera *camera;
 
+    int input = 1;  
     if(input) { 
         glm::vec3 viewPoint = glm::vec3(1,2,0);
         glm::vec3 cameraTarget = glm::vec3(1.4,1.4,3);
@@ -203,8 +207,8 @@ int main()
     }
     else {
 
-        glm::vec3 viewPoint = glm::vec3(0,5,0);
-        glm::vec3 cameraTarget = glm::vec3(0,-2,10);
+        glm::vec3 viewPoint = glm::vec3(5,10,-5);
+        glm::vec3 cameraTarget = glm::vec3(3,6,5);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
         glm::vec3 upward = glm::vec3(0,1,0);
 
@@ -241,7 +245,6 @@ int main()
     glm::vec3 tColor1(0,255,255);
     glm::vec3 tColor2(255,255,0);
     Material triangleMat1(tColor1, 0.4f, 0.3f, 0.3f, 0.5f, false);
-    Material triangleMat2(tColor2, 0.4f, 0.3f, 0.3f, 0.5f, false);
 
     glm::vec3 vertex1 = glm::vec3(4,0,3);
     glm::vec3 vertex2 = glm::vec3(2,0,5);
@@ -250,7 +253,7 @@ int main()
 
     Triangle backTriangle2(origin, triangleMat1, vertex4, vertex1, vertex2);
     Triangle bottomTriangle2(origin, triangleMat1 , vertex1, vertex2, vertex3);
-    Triangle leftTriangle2(origin, triangleMat2, vertex1, vertex3, vertex4);
+    Triangle leftTriangle2(origin, triangleMat1, vertex1, vertex3, vertex4);
     Triangle rightTriangle2(origin, triangleMat1, vertex2, vertex3, vertex4);
 
 
@@ -263,6 +266,10 @@ int main()
     // Ray Equation: p(t) = e + t(s − e).
     renderImage(camera, image, imageWidth, imageHeight, objects, dLight);
 
+    
+    std::string imagesFolder = "images/";
+    writePPM((imagesFolder + "000.ppm").c_str(), image, imageWidth, imageHeight);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -270,7 +277,6 @@ int main()
         // input
         // -----
         processInput(window);
-        // cameraSwap(window, camera, orthoCamera, perspCamera);
 
         // render
         // ------
@@ -326,18 +332,15 @@ void renderImage(Camera* camera, unsigned char* image, int imageWidth, int image
             glm::vec3 color = shade(ray, light, hitRecord, baseColor, objects, recursionDepth);
                 
             
-            if (hitRecord.t != INFINITY) { // if t is not infinity (hit)
-                int idx = (i * imageWidth + j) * 3;
-                image[idx] = color.x;
-                image[idx+1] = color.y;
-                image[idx+2] = color.z;
+            if (hitRecord.t == INFINITY) { // if t is infinity (no hit)
+                color = glm::vec3(0,0,0);
             }
-            else {
-                int idx = (i * imageWidth + j) * 3;
-                image[idx] = 0;
-                image[idx+1] = 0;
-                image[idx+2] = 0;
-            }
+            
+            int idx = (i * imageWidth + j) * 3;
+            image[idx] = color.x;
+            image[idx+1] = color.y;
+            image[idx+2] = color.z;
+
         }
     }
 
@@ -363,14 +366,16 @@ glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, glm::ve
             // SHADOWS ! 
             // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/shadow.pdf
 
-            // glm::vec3 shadowRayDir = light.direction;
-            // float epsilon = 0.1f;
-            // glm::vec3 shadowRayOrigin = ray.evaluate(hitRecord.t) + epsilon*(shadowRayDir);
-            
-            // Ray shadowRay(shadowRayOrigin, shadowRayDir);
-            // bool inShadow = shadowRay.inShadow(objects, objectCount);
-            // if (inShadow)
-            //     color = glm::vec3(0,0,0);
+            // if (hitRecord.t != INFINITY) {
+            //     glm::vec3 shadowRayDir = light.direction;
+            //     float epsilon = 0.1f;
+            //     glm::vec3 shadowRayOrigin = ray.evaluate(hitRecord.t) + epsilon*(shadowRayDir);
+                
+            //     Ray shadowRay(shadowRayOrigin, shadowRayDir);
+            //     bool inShadow = shadowRay.inShadow(objects, objectCount);
+            //     if (inShadow)
+            //         color = hitRecord.s->material.color;
+            // }
             
             // Mirror Reflection (Glaze)
             // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/reflection_refraction.pdf
@@ -416,22 +421,6 @@ void processInput(GLFWwindow *window)
     
 }
 
-void cameraSwap(GLFWwindow *window, Camera* camera, OrthoCamera o, PerspCamera p) {
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-
-        if (SWAP) {
-            camera = &o;
-            SWAP = !SWAP;
-        }
-        else {
-            camera = &p;
-            SWAP = !SWAP;
-        }
-        std::cout << "SWAP: " << SWAP << std::endl;
-    }
-
-}
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -439,6 +428,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void writePPM(const char* filename, unsigned char* data, int width, int height) {
+    std::ofstream file(filename, std::ios::out | std::ios::binary);
+    if (!file) {
+        std::cerr << "Error: Unable to open file for writing!" << std::endl;
+        return;
+    }
+
+    file << "P6\n";
+    file << width << " " << height << "\n";
+    file << "255\n";
+
+    // Write pixel data
+    // Reversing the order of rows
+    for (int y = height - 1; y >= 0; --y) {
+        file.write(reinterpret_cast<char*>(data + y * width * 3), width * 3);
+    }
+    file.close();
 }
 
 
