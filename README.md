@@ -1,4 +1,4 @@
-##RUNNING THE PROGRAM
+## RUNNING THE PROGRAM
 Created by Gavin Baltar and Donald Arango
 
 - Run the makefile in the root directory
