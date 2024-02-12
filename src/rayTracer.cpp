@@ -10,6 +10,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <iomanip>
+#include <math.h>
+
 #include "OrthoCamera.hpp"
 #include "PerspCamera.hpp"
 #include "HitRecord.hpp"
@@ -64,10 +67,10 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
 int main()
 {
-    // int input;
-    // std::cout << "Press 0 for Orthographic View or 1 for Perspective View." << std::endl;
-    // std::cin >> input;
-    // std::cout << std::endl << input << " is the selected option." << std::endl;
+    int input;
+    std::cout << "Press 0 for Orthographic View or 1 for Perspective View." << std::endl;
+    std::cin >> input;
+    std::cout << std::endl << input << " is the selected option." << std::endl;
 
     // glfw: initialize and configure
     // ------------------------------
@@ -193,9 +196,9 @@ int main()
 
     Camera *camera;
 
-    int input = 1;  
+    // Perspective
     if(input) { 
-        glm::vec3 viewPoint = glm::vec3(1,2,0);
+        glm::vec3 viewPoint = glm::vec3(1,2,-1);
         glm::vec3 cameraTarget = glm::vec3(1.4,1.4,3);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
         glm::vec3 upward = glm::vec3(0,1,0);
@@ -205,6 +208,7 @@ int main()
 
         camera = &perspCamera;
     }
+    // Orthographic
     else {
 
         glm::vec3 viewPoint = glm::vec3(5,10,-5);
@@ -263,12 +267,45 @@ int main()
     
 
 
+    // FOR MOVIE CREATION
+    // std::string directory = "images/";
+
+    // int f_s = 20; // frames/sec
+    // int T = 12; // seconds for one full rotation
+
+    // int numImages = T * f_s;
+
+    // for (int t = 0; t < numImages; ++t) {
+
+    //     glm::vec3 viewPoint = glm::vec3(20,2,-10);
+        
+    //     viewPoint.x = viewPoint.x * glm::sin((2 * M_PI * t)/ (T * f_s));
+    //     viewPoint.z = viewPoint.z * glm::cos((2 * M_PI * t)/ (T * f_s));
+
+    //     glm::vec3 cameraTarget = glm::vec3(1.4,1.4,3);
+    //     glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
+    //     glm::vec3 upward = glm::vec3(0,1,0);
+    //     float focalLength = 10;
+
+    //     PerspCamera perspCamera(viewPoint, viewDir, upward, imageWidth, imageHeight, focalLength);
+
+    //     camera = &perspCamera;
+
+    //     // Generate filename with leading zeros
+    //     std::string filename = directory + "output_" + std::to_string(t);
+    //     filename.insert(filename.begin() + directory.length() + 7, 3 - std::to_string(t).length(), '0'); // insert leading zeros
+    //     filename += ".ppm";
+
+    //     renderImage(camera, image, imageWidth, imageHeight, objects, dLight);
+        
+    //     // Write image data to the file
+    //     writePPM(filename.c_str(), image, imageWidth, imageHeight);
+        
+    //     std::cout << "Generated: " << filename << std::endl;
+    // }
+
     // Ray Equation: p(t) = e + t(s − e).
     renderImage(camera, image, imageWidth, imageHeight, objects, dLight);
-
-    
-    std::string imagesFolder = "images/";
-    writePPM((imagesFolder + "000.ppm").c_str(), image, imageWidth, imageHeight);
 
     // render loop
     // -----------
