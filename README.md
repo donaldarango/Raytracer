@@ -1,4 +1,7 @@
-## RUNNING THE PROGRAM
+## Description
+Simple Raytracing project created for Graphics Programming class written in C++
+
+## Running Locally
 Created by Gavin Baltar and Donald Arango
 
 - Run the makefile in the root directory
