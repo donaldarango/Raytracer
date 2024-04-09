@@ -1,5 +1,5 @@
 ## Description
-Simple Raytracing project created for Graphics Programming class written in C++
+Raytracing project created for Graphics Programming class written in C++
 
 ## Running Locally
 Created by Gavin Baltar and Donald Arango
