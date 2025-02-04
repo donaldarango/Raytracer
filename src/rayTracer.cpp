@@ -210,7 +210,6 @@ int main()
     }
     // Orthographic
     else {
-
         glm::vec3 viewPoint = glm::vec3(5,10,-5);
         glm::vec3 cameraTarget = glm::vec3(3,6,5);
         glm::vec3 viewDir = glm::normalize(cameraTarget - viewPoint);
@@ -226,25 +225,28 @@ int main()
     glm::vec3 lightDirection(20,30,0);
     DirectionalLight dLight(I, lightDirection);
 
+    // Plane
     glm::vec3 planeOrigin(0,0,0);
     glm::vec3 planeColor(255,255,255);
     Material planeMaterial(planeColor, 0.3f, 0.3f, 0.4f, 0.5f, true);
     glm::vec3 planeNormal(0,1,0);
     Plane plane(planeOrigin, planeMaterial, planeNormal);
 
+    // Sphere 1
     glm::vec3 sphereOrigin1(2,2,10);
     float radius1 = 2;
     glm::vec3 color1(255,0,0);
     Material sphereMaterial(color1, 0.2f , 0.4f, 0.4f, 0.5f, false);
     Sphere sphere1(sphereOrigin1, sphereMaterial, radius1); 
 
+    // Sphere 2
     glm::vec3 sphereOrigin2(-2,1,10);
     float radius2 = 1;
     glm::vec3 color2(0,255,0);
     Material sphere2Mat(color2, 0.2f , 0.2f, 0.6f, 0.5f, false);
     Sphere sphere2(sphereOrigin2, sphere2Mat, radius2);
 
-    // Tetrahedron
+    // Tetrahedron (4 triangles)
     glm::vec3 origin(0,0,0);
     glm::vec3 tColor1(0,255,255);
     glm::vec3 tColor2(255,255,0);
@@ -399,20 +401,6 @@ glm::vec3 shade(Ray &ray, DirectionalLight &light, HitRecord& hitRecord, glm::ve
             if (hitRecord.t != INFINITY) {
                 color = light.illuminate(ray, hitRecord);
             }
-
-            // SHADOWS ! 
-            // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/shadow.pdf
-
-            // if (hitRecord.t != INFINITY) {
-            //     glm::vec3 shadowRayDir = light.direction;
-            //     float epsilon = 0.1f;
-            //     glm::vec3 shadowRayOrigin = ray.evaluate(hitRecord.t) + epsilon*(shadowRayDir);
-                
-            //     Ray shadowRay(shadowRayOrigin, shadowRayDir);
-            //     bool inShadow = shadowRay.inShadow(objects, objectCount);
-            //     if (inShadow)
-            //         color = hitRecord.s->material.color;
-            // }
             
             // Mirror Reflection (Glaze)
             // source: https://web.cse.ohio-state.edu/~shen.94/681/Site/Slides_files/reflection_refraction.pdf
@@ -467,6 +455,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+// Creates image files for video
 void writePPM(const char* filename, unsigned char* data, int width, int height) {
     std::ofstream file(filename, std::ios::out | std::ios::binary);
     if (!file) {
@@ -485,18 +474,3 @@ void writePPM(const char* filename, unsigned char* data, int width, int height) 
     }
     file.close();
 }
-
-
-// Camera
-//   viewpoint, camera,basis
-//   resolution
-//   depth
-//   left, right, top
-
-//   for i -> 128
-//       for j -> 128
-//           Ray = Camera(i,j)
-//           for obj in Objects in scene
-//               intersection_point = obj.intersect(Ray)
-//               color = shading(int-point, normal)
-//           image[i][j] = color

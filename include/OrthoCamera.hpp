@@ -9,7 +9,7 @@ class OrthoCamera : public Camera {
         OrthoCamera(glm::vec3 viewPoint, glm::vec3 viewDir, glm::vec3 upward, float width, float height);
         glm::vec3 GenerateRayOrigin(float u, float v);
         glm::vec3 GenerateRayDirection(float u, float v);
-
+        
 };
 
 #endif

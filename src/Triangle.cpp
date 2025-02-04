@@ -40,7 +40,6 @@
 
         float M = a*(ei_hf) + b*(gf_di) + c*(dh_eg);
 
-        
         float t = -(f*(ak_jb) + e*(jc_al) + d*(bl_kc)) / M;
         if ((t < t0) || (t > t1))
             return HitRecord(this, INFINITY, glm::vec3(0,0,0));

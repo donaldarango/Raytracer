@@ -12,6 +12,7 @@ class PerspCamera : public Camera {
         glm::vec3 GenerateRayDirection(float u, float v);
 
         float d;
+        
 };
 
 #endif

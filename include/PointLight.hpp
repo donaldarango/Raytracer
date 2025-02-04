@@ -13,9 +13,7 @@ public:
 
     float I; // Intensity
     glm::vec3 p; // position
-
-
+    
 };
-
 
 #endif

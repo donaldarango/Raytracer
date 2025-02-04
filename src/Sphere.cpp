@@ -18,8 +18,6 @@
 
         float discriminate = pow(B, 2) - A*C;
         
-        // std::cout << discriminate << std::endl;
-        // TODO: Check discriminate values
         if (discriminate < 0) { // no intersection
             return HitRecord(this, INFINITY, glm::vec3(0,0,0));
         }
@@ -30,9 +28,6 @@
         }
 
         // Two solutions, entry and exit points of sphere
-
-        // !! may need to check if values are within interval !!
-
         float solution1 = (glm::dot(-(ray.getDirection()), (ray.getOrigin() - origin)) + sqrt(discriminate)) 
                      / glm::dot(ray.getDirection(), ray.getDirection());
         

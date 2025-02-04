@@ -17,7 +17,6 @@ bool Ray::inShadow(Surface** objects, int numObjects) {
         }
     }
     return false;
-
 }
 
 glm::vec3 Ray::getOrigin() {

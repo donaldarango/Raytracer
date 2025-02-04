@@ -10,6 +10,7 @@ class HitRecord;
 
 class Ray {
 public:
+
     Ray(glm::vec3 o, glm::vec3 d);
     glm::vec3 evaluate(float t);
     bool inShadow(Surface** objects, int numObjects);
@@ -18,6 +19,7 @@ public:
     glm::vec3 getDirection();
 
 private:
+
     glm::vec3 o; // ray origin
     glm::vec3 d;  // ray direction
 
