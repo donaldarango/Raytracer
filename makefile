@@ -8,7 +8,7 @@ BIN_DIR := bin
 
 INCLUDE := -Iinclude
 
-EXE := $(BIN_DIR)/rayTracer
+EXE := $(BIN_DIR)/main
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
